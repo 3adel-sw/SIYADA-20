@@ -1288,21 +1288,21 @@ document.addEventListener('change', async e => {
 });
 function setupInfo() {
   const co = $('#suCo').value.trim();
-    if (!co) { $('#suErr').textContent = 'اكتب اسم الشركة الأول.'; $('#suCo').focus(); return null; }
-    $('#suErr').textContent = '';
-    return { company: co, activity: $('#suAct').value.trim(), taxNo: $('#suTax').value.trim(), phone: $('#suPh').value.trim(), street: $('#suAd').value.trim(), startDate: $('#suDt').value || E.defaultSettings().startDate, logo: APP.UI.setupLogo || '' };
-  }
-  APP.acts.suNew = async () => {
-    const info = setupInfo(); if (!info) return;
-    APP.S = APP.normalizeState(APP.newState(info)); APP.R = E.build(APP.S); APP.index(); APP.S.meta.changes = 0;
-    await APP.saveNow(); location.hash = '#/dashboard'; APP.render(true);
-    APP.toast('اتجهزت دفاتر ' + info.company + '. ابدأ بإضافة العملاء والأصناف.');
-  };
-  APP.acts.suImport = async () => {
-    const info = setupInfo(); if (!info) return;
-    const fl = $('#suFiles').files; if (!fl.length) { $('#suErr').textContent = 'اختار ملفات الاستيراد الأول.'; return; }
-    try {
-      const r = await APP.importFrom(fl, info.company);
+  if (!co) { $('#suErr').textContent = 'اكتب اسم الشركة الأول.'; $('#suCo').focus(); return null; }
+  $('#suErr').textContent = '';
+  return { company: co, activity: $('#suAct').value.trim(), taxNo: $('#suTax').value.trim(), phone: $('#suPh').value.trim(), street: $('#suAd').value.trim(), startDate: $('#suDt').value || E.defaultSettings().startDate, logo: APP.UI.setupLogo || '' };
+}
+APP.acts.suNew = async () => {
+  const info = setupInfo(); if (!info) return;
+  APP.S = APP.normalizeState(APP.newState(info)); APP.R = E.build(APP.S); APP.index(); APP.S.meta.changes = 0;
+  await APP.saveNow(); location.hash = '#/dashboard'; APP.render(true);
+  APP.toast('اتجهزت دفاتر ' + info.company + '. ابدأ بإضافة العملاء والأصناف.');
+};
+APP.acts.suImport = async () => {
+  const info = setupInfo(); if (!info) return;
+  const fl = $('#suFiles').files; if (!fl.length) { $('#suErr').textContent = 'اختار ملفات الاستيراد الأول.'; return; }
+  try {
+    const r = await APP.importFrom(fl, info.company);
     Object.assign(r.S.settings, { company: info.company, activity: info.activity || r.S.settings.activity, taxNo: info.taxNo || r.S.settings.taxNo, phone: info.phone || r.S.settings.phone, street: info.street || r.S.settings.street, logo: info.logo || r.S.settings.logo });
     APP.S = r.S; APP.R = E.build(APP.S); APP.index(); APP.S.meta.changes = 0; APP.S.meta.lastBackup = '';
     await APP.saveNow(); location.hash = '#/dashboard'; APP.render(true);
