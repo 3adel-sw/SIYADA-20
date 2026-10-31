@@ -1285,7 +1285,7 @@ function showSetup() {
   document.title = 'SIYADA — إعداد الشركة';
   const co = $('#suCo'); co.focus(); APP.ons.suco(co);
 }
-APP.ons.suco = t => { const pv = $('#pvCo'); if (pv) { pv.textContent = t.value.trim() || 'اسم شركتك Hassan'; } };
+APP.ons.suco = t => { const pv = $('#pvCo'); if (pv) { pv.textContent = t.value.trim() || ''; } };
 document.addEventListener('change', async e => {
   if (e.target.id === 'suLogo') {
     try { APP.UI.setupLogo = await APP.readLogo(e.target.files[0]); $('#suLogoPv').innerHTML = '<img alt="" src="' + APP.UI.setupLogo + '" style="height:46px">'; const pv = $('#pvCo'); const sh = pv.closest('.sh'); const old = $('img', sh); if (old) old.remove(); sh.insertAdjacentHTML('afterbegin', '<img class="logo" alt="" src="' + APP.UI.setupLogo + '">'); }
