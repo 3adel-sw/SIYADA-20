@@ -186,10 +186,6 @@ svg.chart text{font-family:var(--font);font-size:11px;fill:var(--muted)}
 #setup .pane{background:var(--g9);color:#d8e4de;padding:46px 40px;display:flex;flex-direction:column;justify-content:space-between;gap:30px}
 #setup .word{font-size:clamp(3rem,7vw,4.4rem);font-weight:800;letter-spacing:.06em;color:var(--brass);direction:ltr;text-align:right;line-height:1}
 #setup .pane p{margin:10px 0 0;font-size:1.05rem;line-height:1.9;max-width:34ch}
-#setup .prev{background:var(--paper);color:var(--ink);padding:16px 18px;border-top:4px solid var(--brass)}
-#setup .prev .sh{margin-bottom:8px}
-#setup .prev .co{min-height:1.7em}
-#setup .prev .hintp{font-size:.8rem;color:var(--muted)}
 #setup .form{padding:46px clamp(20px,6vw,80px);max-width:820px}
 #setup h1{font-size:1.7rem;margin-bottom:6px}
 #setup .sub{color:var(--muted);margin-bottom:22px}
@@ -1268,10 +1264,9 @@ APP.importFrom = async function (fileList, company) {
 /* ---------- first-run setup (company name typed by the user, applied everywhere) ---------- */
 function showSetup() {
   const s = APP.S && APP.S.settings ? APP.S.settings : E.defaultSettings();
-  $('#root').innerHTML = '<div id="setup"><div class="pane"><div><div class="word">SIYADA</div><p>برنامج حسابات كامل على جهازك: فواتير، سندات، قيود، دفتر أستاذ، وتقارير جاهزة للطباعة.</p></div>' +
-    '<div class="prev"><div class="sh"><div class="t"><div class="co" id="pvCo">اسم شركتك هنا</div><div class="ti">ميزان المراجعة</div></div></div><div class="hintp">كده هيظهر اسم شركتك في أعلى كل شاشة وتقرير وفاتورة مطبوعة.</div></div></div>' +
+  $('#root').innerHTML = '<div id="setup"><div class="pane"><div><div class="word">SIYADA</div><p>برنامج حسابات كامل على جهازك: فواتير، سندات، قيود، دفتر أستاذ، وتقارير جاهزة للطباعة.</p></div></div>' +
     '<div class="form"><h1>إعداد الشركة</h1><div class="sub">اكتب بيانات شركتك مرة واحدة، وتقدر تعدلها بعدين من «إعدادات الشركة».</div>' +
-    '<div class="frow c2"><label class="f">اسم الشركة <span class="req">*</span><input class="in" id="suCo" data-on="suco" autocomplete="off" placeholder="مثال: شركة النور للتجارة" value="' + esc(s.company) + '"></label>' +
+    '<div class="frow c2"><label class="f">اسم الشركة <span class="req">*</span><input class="in" id="suCo" autocomplete="off" placeholder="مثال: شركة النور للتجارة" value="' + esc(s.company) + '"></label>' +
     '<label class="f">النشاط<input class="in" id="suAct" value="' + esc(s.activity) + '" placeholder="مثال: توزيع مواد غذائية"></label></div>' +
     '<div class="frow"><label class="f">الرقم الضريبي<input class="in n" id="suTax" value="' + esc(s.taxNo) + '"></label><label class="f">الهاتف<input class="in n" id="suPh" value="' + esc(s.phone) + '"></label>' +
     '<label class="f">تاريخ بداية الدفاتر<input class="in" type="date" id="suDt" value="' + esc(s.startDate) + '"></label></div>' +
@@ -1283,32 +1278,31 @@ function showSetup() {
     '<div class="toolbar" style="margin-top:12px"><button class="btn" data-act="suImport">استيراد وابدأ</button></div></div></div>';
   APP.UI.setupLogo = (APP.S && APP.S.settings.logo) || '';
   document.title = 'SIYADA — إعداد الشركة';
-  const co = $('#suCo'); co.focus(); APP.ons.suco(co);
+  const co = $('#suCo'); co.focus();
 }
-APP.ons.suco = t => { const pv = $('#pvCo'); if (pv) { pv.textContent = t.value.trim() || ''; } };
 document.addEventListener('change', async e => {
   if (e.target.id === 'suLogo') {
-    try { APP.UI.setupLogo = await APP.readLogo(e.target.files[0]); $('#suLogoPv').innerHTML = '<img alt="" src="' + APP.UI.setupLogo + '" style="height:46px">'; const pv = $('#pvCo'); const sh = pv.closest('.sh'); const old = $('img', sh); if (old) old.remove(); sh.insertAdjacentHTML('afterbegin', '<img class="logo" alt="" src="' + APP.UI.setupLogo + '">'); }
+    try { APP.UI.setupLogo = await APP.readLogo(e.target.files[0]); $('#suLogoPv').innerHTML = '<img alt="" src="' + APP.UI.setupLogo + '" style="height:46px">'; }
     catch (x) { $('#suErr').textContent = x.message; }
   }
 });
 function setupInfo() {
   const co = $('#suCo').value.trim();
-  if (!co) { $('#suErr').textContent = 'اكتب اسم الشركة الأول.'; $('#suCo').focus(); return null; }
-  $('#suErr').textContent = '';
-  return { company: co, activity: $('#suAct').value.trim(), taxNo: $('#suTax').value.trim(), phone: $('#suPh').value.trim(), street: $('#suAd').value.trim(), startDate: $('#suDt').value || E.defaultSettings().startDate, logo: APP.UI.setupLogo || '' };
-}
-APP.acts.suNew = async () => {
-  const info = setupInfo(); if (!info) return;
-  APP.S = APP.normalizeState(APP.newState(info)); APP.R = E.build(APP.S); APP.index(); APP.S.meta.changes = 0;
-  await APP.saveNow(); location.hash = '#/dashboard'; APP.render(true);
-  APP.toast('اتجهزت دفاتر ' + info.company + '. ابدأ بإضافة العملاء والأصناف.');
-};
-APP.acts.suImport = async () => {
-  const info = setupInfo(); if (!info) return;
-  const fl = $('#suFiles').files; if (!fl.length) { $('#suErr').textContent = 'اختار ملفات الاستيراد الأول.'; return; }
-  try {
-    const r = await APP.importFrom(fl, info.company);
+    if (!co) { $('#suErr').textContent = 'اكتب اسم الشركة الأول.'; $('#suCo').focus(); return null; }
+    $('#suErr').textContent = '';
+    return { company: co, activity: $('#suAct').value.trim(), taxNo: $('#suTax').value.trim(), phone: $('#suPh').value.trim(), street: $('#suAd').value.trim(), startDate: $('#suDt').value || E.defaultSettings().startDate, logo: APP.UI.setupLogo || '' };
+  }
+  APP.acts.suNew = async () => {
+    const info = setupInfo(); if (!info) return;
+    APP.S = APP.normalizeState(APP.newState(info)); APP.R = E.build(APP.S); APP.index(); APP.S.meta.changes = 0;
+    await APP.saveNow(); location.hash = '#/dashboard'; APP.render(true);
+    APP.toast('اتجهزت دفاتر ' + info.company + '. ابدأ بإضافة العملاء والأصناف.');
+  };
+  APP.acts.suImport = async () => {
+    const info = setupInfo(); if (!info) return;
+    const fl = $('#suFiles').files; if (!fl.length) { $('#suErr').textContent = 'اختار ملفات الاستيراد الأول.'; return; }
+    try {
+      const r = await APP.importFrom(fl, info.company);
     Object.assign(r.S.settings, { company: info.company, activity: info.activity || r.S.settings.activity, taxNo: info.taxNo || r.S.settings.taxNo, phone: info.phone || r.S.settings.phone, street: info.street || r.S.settings.street, logo: info.logo || r.S.settings.logo });
     APP.S = r.S; APP.R = E.build(APP.S); APP.index(); APP.S.meta.changes = 0; APP.S.meta.lastBackup = '';
     await APP.saveNow(); location.hash = '#/dashboard'; APP.render(true);
